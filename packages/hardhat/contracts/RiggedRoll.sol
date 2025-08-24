@@ -19,6 +19,7 @@ contract RiggedRoll is Ownable {
     // Include the `receive()` function to enable the contract to receive incoming Ether.
 
     function riggedRoll() public{
+        require(address(this).balance >= .002 ether, "Insufficient contract ETH");
         bytes32 prevHash = blockhash(block.number - 1);
         uint256 nonce = diceGame.nonce();
         bytes32 hash = keccak256(abi.encodePacked(prevHash, address(diceGame), nonce));
@@ -33,6 +34,11 @@ contract RiggedRoll is Ownable {
         else{
             console.log("Not the time");
         }
+    }
+
+    function withdraw(address payable _to, uint256 amount) public payable onlyOwner(){
+        (bool sent, bytes memory data) = _to.call{value: amount}("");
+        require(sent, "Failed to send Ether");
     }
 
     receive() external payable{
