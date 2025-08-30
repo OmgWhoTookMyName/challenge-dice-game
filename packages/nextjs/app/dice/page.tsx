@@ -30,11 +30,11 @@ const DiceGame: NextPage = () => {
     address: riggedRollContract?.address,
   });
   const { data: prize } = useScaffoldReadContract({ contractName: "DiceGame", functionName: "prize" });
-
   const { data: rollsHistoryData, isLoading: rollsHistoryLoading } = useScaffoldEventHistory({
     contractName: "DiceGame",
     eventName: "Roll",
     watch: true,
+    fromBlock: 9056931n,
   });
 
   useEffect(() => {
@@ -44,13 +44,14 @@ const DiceGame: NextPage = () => {
       (rollsHistoryData?.length as number) > rolls.length
     ) {
       setIsRolling(false);
-
       setRolls(
-        rollsHistoryData?.map(({ args }) => ({
-          address: args.player as AddressType,
-          amount: Number(args.amount),
-          roll: (args.roll as bigint).toString(16).toUpperCase(),
-        })) || [],
+        rollsHistoryData
+          ?.filter(args => args)
+          .map(({ args }) => ({
+            address: args.player as AddressType,
+            amount: Number(args.amount),
+            roll: (args.roll as bigint).toString(16).toUpperCase(),
+          })) || [],
       );
     }
   }, [rolls, rollsHistoryData, rollsHistoryLoading]);
@@ -70,10 +71,12 @@ const DiceGame: NextPage = () => {
       setIsRolling(false);
 
       setWinners(
-        winnerHistoryData?.map(({ args }) => ({
-          address: args.winner as AddressType,
-          amount: args.amount as bigint,
-        })) || [],
+        winnerHistoryData
+          ?.filter(args => args)
+          .map(({ args }) => ({
+            address: args.winner as AddressType,
+            amount: args.amount as bigint,
+          })) || [],
       );
     }
   }, [winnerHistoryData, winnerHistoryLoading, winners.length]);
